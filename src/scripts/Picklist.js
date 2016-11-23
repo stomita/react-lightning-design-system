@@ -38,16 +38,14 @@ export default class Picklist extends Component {
     if (this.props.onSelect) {
       this.props.onSelect(item);
     }
-    setTimeout(() => {
-      this.setState({ opened: false });
-      if (this.props.onComplete) {
-        this.props.onComplete();
-      }
-      const picklistButtonEl = this.picklistButton;
-      if (picklistButtonEl) {
-        picklistButtonEl.focus();
-      }
-    }, 200);
+    this.setState({ opened: false });
+    if (this.props.onComplete) {
+      this.props.onComplete();
+    }
+    const picklistButtonEl = this.picklistButton;
+    if (picklistButtonEl) {
+      picklistButtonEl.focus();
+    }
     e.preventDefault();
     e.stopPropagation();
   }
@@ -59,17 +57,13 @@ export default class Picklist extends Component {
   }
 
   onBlur() {
-    setTimeout(() => {
-      if (!this.isFocusedInComponent()) {
-        this.setState({ opened: false });
-        if (this.props.onBlur) {
-          this.props.onBlur();
-        }
-        if (this.props.onComplete) {
-          this.props.onComplete();
-        }
-      }
-    }, 10);
+    this.setState({ opened: false });
+    if (this.props.onBlur) {
+      this.props.onBlur();
+    }
+    if (this.props.onComplete) {
+      this.props.onComplete();
+    }
   }
 
   onKeydown(e) {
@@ -148,7 +142,6 @@ export default class Picklist extends Component {
           className='slds-picklist__label'
           type='neutral'
           onClick={ this.onClick.bind(this) }
-          onBlur={ this.onBlur.bind(this) }
           onKeyDown={ this.onKeydown.bind(this) }
         >
           <span className='slds-truncate'>
@@ -169,6 +162,7 @@ export default class Picklist extends Component {
           size={ menuSize }
           onMenuItemClick={ this.onPicklistItemClick.bind(this) }
           onMenuClose={ this.onPicklistClose.bind(this) }
+          onComponentBlur={ this.onBlur.bind(this) }
         >
           { React.Children.map(children, this.renderPicklistItem.bind(this)) }
         </DropdownMenu> :

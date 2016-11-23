@@ -19,6 +19,7 @@ export class DropdownMenuItem extends Component {
       while (itemEl) {
         const anchorEl = itemEl.querySelector('.react-slds-menuitem[tabIndex]');
         if (anchorEl && !anchorEl.disabled) {
+          this.onWillFocus();
           anchorEl.focus();
           return;
         }
@@ -30,6 +31,16 @@ export class DropdownMenuItem extends Component {
   onBlur(e) {
     if (this.props.onBlur) {
       this.props.onBlur(e);
+    }
+  }
+
+  onMouseDown(e) {
+    this.onWillFocus(e);
+  }
+
+  onWillFocus(e) {
+    if (this.props.onWillFocus) {
+      this.props.onWillFocus(e);
     }
   }
 
@@ -49,6 +60,7 @@ export class DropdownMenuItem extends Component {
       { 'slds-is-selected': selected },
       className
     );
+    const { onWillFocus, ...pprops } = props; // eslint-disable-line no-unused-vars
     return (
       <li className={ menuItemClass } disabled={ disabled }>
         <a
@@ -59,8 +71,9 @@ export class DropdownMenuItem extends Component {
           onClick={ disabled ? null : onClick }
           onKeyDown={ disabled ? null : this.onKeyDown.bind(this) }
           onBlur={ disabled ? null : this.onBlur.bind(this) }
+          onMouseDown={ disabled ? null : this.onMouseDown.bind(this) }
           onFocus={ disabled ? null : this.onFocus.bind(this) }
-          { ...props }
+          { ...pprops }
         >
           <p className='slds-truncate'>
             { icon ? <Icon icon={ icon } size='x-small' align='left' /> : null }
@@ -83,6 +96,7 @@ DropdownMenuItem.propTypes = {
   selected: PropTypes.bool,
   onClick: PropTypes.func,
   onBlur: PropTypes.func,
+  onWillFocus: PropTypes.func,
   onFocus: PropTypes.func,
   children: PropTypes.node,
 };
@@ -92,16 +106,32 @@ export const MenuItem = DropdownMenuItem;
 
 
 export default class DropdownMenu extends Component {
+
+  constructor() {
+    super();
+    this.focusInComponent = false;
+  }
+
   onMenuItemBlur(e) {
     if (this.props.onBlur) {
       this.props.onBlur(e);
     }
+    if (this.props.onComponentBlur) {
+      if (!this.focusInComponent) {
+        this.props.onComponentBlur(e);
+      }
+    }
+    this.focusInComponent = false;
   }
 
   onMenuItemFocus(e) {
     if (this.props.onFocus) {
       this.props.onFocus(e);
     }
+  }
+
+  onMenuItemWillFocus() {
+    this.focusInComponent = true;
   }
 
   onKeyDown(e) {
@@ -128,10 +158,14 @@ export default class DropdownMenu extends Component {
       if (onBlur) { onBlur(e); }
       this.onMenuItemBlur(e);
     };
+    const onMenuItemWillFocus = (e) => {
+      this.onMenuItemWillFocus(e);
+    };
     return React.cloneElement(menuItem, {
       onClick: onMenuItemClick,
       onBlur: onMenuItemBlur,
       onFocus: onMenuItemFocus,
+      onWillFocus: onMenuItemWillFocus,
     });
   }
 
@@ -184,6 +218,7 @@ DropdownMenu.propTypes = {
   onMenuItemClick: PropTypes.func,
   onMenuClose: PropTypes.func,
   onBlur: PropTypes.func,
+  onComponentBlur: PropTypes.func,
   onFocus: PropTypes.func,
   children: PropTypes.node,
   dropdownMenuRef: PropTypes.func,
